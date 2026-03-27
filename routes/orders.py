@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -34,3 +34,25 @@ def list_orders(
     current_user: User = Depends(get_current_user),
 ):
     return db.query(Order).filter(Order.user_id == current_user.id).all()
+
+
+@router.post("/{id}/return", status_code=status.HTTP_200_OK)
+def return_order(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    order = (
+        db.query(Order)
+        .filter(Order.id == id, Order.user_id == current_user.id)
+        .first()
+    )
+    if not order:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
+
+    return {
+        "message": "Order return request submitted successfully",
+        "order_id": order.id,
+        "item_name": order.item_name,
+        "return_status": "requested",
+    }
