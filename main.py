@@ -1,4 +1,7 @@
+from datetime import datetime, timezone
+
 from fastapi import FastAPI
+from routes.agent import router as agent_router
 
 from database import Base, engine
 from models.invoice import Invoice  # noqa: F401
@@ -12,10 +15,20 @@ from routes.orders import router as orders_router
 from routes.payments import router as payments_router
 from routes.products import router as products_router
 from routes.shipping import router as shipping_router
+from fastapi.middleware.cors import CORSMiddleware
+
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Production Ready FastAPI Auth API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 app.include_router(auth_router)
 app.include_router(orders_router)
@@ -23,11 +36,17 @@ app.include_router(payments_router)
 app.include_router(invoices_router)
 app.include_router(shipping_router)
 app.include_router(products_router)
+app.include_router(agent_router)
 
 
 @app.get("/")
 def health_check():
     return {"message": "API is running"}
+
+
+@app.get("/ping")
+def ping():
+    return {"pong": True, "timestamp": datetime.now(timezone.utc).isoformat()}
 
 
 @app.get("/health")
