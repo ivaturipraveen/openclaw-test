@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from typing import List
 
 from database import get_db
 from models.user import User
@@ -42,6 +43,11 @@ def login(payload: UserLogin, db: Session = Depends(get_db)):
 
     token = create_access_token({"sub": user.email, "user_id": user.id})
     return TokenResponse(access_token=token)
+
+
+@router.get("/users", response_model=List[UserResponse])
+def list_users(db: Session = Depends(get_db)):
+    return db.query(User).order_by(User.id).all()
 
 
 @router.get("/users/me", response_model=UserResponse)
