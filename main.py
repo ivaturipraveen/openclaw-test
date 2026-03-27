@@ -10,6 +10,7 @@ from routes.auth import router as auth_router
 from routes.invoices import router as invoices_router
 from routes.orders import router as orders_router
 from routes.payments import router as payments_router
+from routes.products import router as products_router
 from routes.shipping import router as shipping_router
 
 Base.metadata.create_all(bind=engine)
@@ -21,6 +22,7 @@ app.include_router(orders_router)
 app.include_router(payments_router)
 app.include_router(invoices_router)
 app.include_router(shipping_router)
+app.include_router(products_router)
 
 
 @app.get("/")
