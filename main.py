@@ -26,3 +26,8 @@ app.include_router(shipping_router)
 @app.get("/")
 def health_check():
     return {"message": "API is running"}
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok", "project": "project2"}
