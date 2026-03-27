@@ -1,48 +1,15 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, EmailStr
+from fastapi import FastAPI
 
-app = FastAPI(title="Auth API")
+from database import Base, engine
+from routes.auth import router as auth_router
 
+Base.metadata.create_all(bind=engine)
 
-class SignupRequest(BaseModel):
-    email: EmailStr
-    password: str
-    full_name: str
+app = FastAPI(title="Production Ready FastAPI Auth API")
 
-
-class LoginRequest(BaseModel):
-    email: EmailStr
-    password: str
+app.include_router(auth_router)
 
 
-class MessageResponse(BaseModel):
-    message: str
-
-
-class TokenResponse(BaseModel):
-    access_token: str
-    token_type: str
-
-
-fake_users_db: dict[str, dict[str, str]] = {}
-
-
-@app.post("/signup", response_model=MessageResponse)
-def signup(payload: SignupRequest):
-    if payload.email in fake_users_db:
-        raise HTTPException(status_code=400, detail="User already exists")
-
-    fake_users_db[payload.email] = {
-        "full_name": payload.full_name,
-        "password": payload.password,
-    }
-    return MessageResponse(message="User created successfully")
-
-
-@app.post("/login", response_model=TokenResponse)
-def login(payload: LoginRequest):
-    user = fake_users_db.get(payload.email)
-    if not user or user["password"] != payload.password:
-        raise HTTPException(status_code=401, detail="Invalid email or password")
-
-    return TokenResponse(access_token="fake-jwt-token", token_type="bearer")
+@app.get("/")
+def health_check():
+    return {"message": "API is running"}
