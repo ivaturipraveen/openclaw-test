@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import Any, Dict, List
 
 from database import get_db
 from models.user import User
@@ -63,3 +63,26 @@ def delete_user(id: int, db: Session = Depends(get_db)):
 
     db.delete(user)
     db.commit()
+
+
+@router.post("/signup/email-preview", status_code=status.HTTP_200_OK)
+def signup_email_preview(payload: UserSignup) -> Dict[str, Any]:
+    return {
+        "message": "Dummy signup email preview generated successfully",
+        "user": {
+            "email": payload.email,
+            "full_name": payload.full_name,
+        },
+        "email_preview": {
+            "to": payload.email,
+            "from": "noreply@example.com",
+            "subject": "Welcome to Demo App",
+            "body": f"Hi {payload.full_name}, thanks for signing up. This is a sample welcome email.",
+        },
+        "verification": {
+            "required": True,
+            "verification_link": "https://example.com/verify?token=sample-verification-token",
+            "otp": "123456",
+            "expires_in_minutes": 10,
+        },
+    }
